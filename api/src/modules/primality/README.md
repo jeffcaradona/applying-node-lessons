@@ -54,4 +54,4 @@ src/
 ---
 
 **Summary:**  
-This modular design allows you to easily add, test, and select different primality evaluation strategies, balancing speed and rigor as needed.
+This modular design allows you to easily add, test, and select different primality evaluation strategies, balancing speed
