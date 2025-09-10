@@ -13,16 +13,21 @@
   ],
   "scripts": {
     "start": "node ./bin/www",
-    "start:debug": "node --inspect=127.0.0.1:9229 ./bin/www",
-    "start:dev": "cross-env  NODE_ENV=development  PORT=3001 DEBUG=api:* nodemon ./bin/www",
+    "start:debug": "node --inspect=127.0.0.1:9228 ./bin/www",
+    "start:dev": "cross-env  NODE_ENV=development PORT=3000 API_PORT=3001 DEBUG=api:* nodemon ./bin/www",
     "lint": "eslint ./src"
   },
   "dependencies": {
+    "bootstrap": "^5.3.8",
+    "cookie-parser": "^1.4.7",
+    "datatables.net-bs5": "^2.3.4",
     "debug": "^4.4.1",
     "dotenv": "^17.2.2",
     "dotenv-expand": "^12.0.3",
+    "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-rate-limit": "^8.1.0",
+    "express-session": "^1.18.2",
     "helmet": "^8.1.0"
   },
   "devDependencies": {
