@@ -1,0 +1,221 @@
+#!/usr/bin/env node
+
+// =======================
+// Module Imports
+// =======================
+
+/**
+ * Load environment variables from .env file.
+ */
+import { configDotenv } from 'dotenv';
+
+/**
+ * HTTP error utility for consistent error responses.
+ */
+import createError from "http-errors";
+
+/**
+ * Import Express application.
+ */
+import app from '../src/app.js';
+
+/**
+ * Debug utility for logging server events.
+ */
+import debugLib from 'debug';
+const debug = debugLib('learning-autocannon:server');
+
+/**
+ * Node.js HTTP server module.
+ */
+import http from 'http';
+
+// =======================
+// Environment Setup
+// =======================
+
+/**
+ * Initialize environment variables.
+ */
+configDotenv();
+
+/**
+ * Normalize a port into a number, string, or false.
+ * @param {string|number} val - The port value from environment or default.
+ * @returns {number|string|boolean} - Normalized port value.
+ */
+function normalizePort(val) {
+  const port = parseInt(val, 10);
+  if (isNaN(port)) {
+    // Named pipe
+    return val;
+  }
+  if (port >= 0) {
+    // Port number
+    return port;
+  }
+  return false;
+}
+
+/**
+ * Get port from environment and store in Express.
+ * @type {number|string}
+ */
+const port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+// =======================
+// Server Creation
+// =======================
+
+/**
+ * Create HTTP server using the Express app.
+ * @type {http.Server}
+ */
+const server = http.createServer(app);
+
+/**
+ * Start listening on the specified port.
+ */
+server.listen(port);
+
+// =======================
+// Server Event Binding
+// =======================
+
+/**
+ * Bind server event listeners for lifecycle management and error handling.
+ */
+server.on("clientError", onClientError);
+server.on('error', onError);
+server.on('listening', onListening);
+server.on('close', onClose);
+
+// =======================
+// Process Signal Handling
+// =======================
+
+/**
+ * Bind process signals for graceful shutdown.
+ * Handles SIGTERM and SIGINT (Ctrl+C).
+ */
+process.on("SIGTERM", onShutdown);
+process.on("SIGINT", onShutdown);
+
+// =======================
+// Event Handler Functions
+// =======================
+
+/**
+ * Handle client connection errors before HTTP parsing.
+ * Sends a 400 Bad Request response for malformed requests.
+ * @param {Error} err - The error object.
+ * @param {net.Socket} socket - The client socket.
+ */
+function onClientError(err, socket) {
+  debug("Client connection error:", err);
+
+  // Create and send a 400 Bad Request error response
+  const httpError = createError(400, "Bad Request", {
+    expose: false,
+    code: err.code
+  });
+
+  debug(`HTTP error created: ${httpError.status} ${httpError.message}`);
+  socket.end(`HTTP/1.1 ${httpError.status} ${httpError.message}\r\n\r\n`);
+}
+
+/**
+ * Handle server errors during startup and runtime.
+ * Provides friendly messages for common errors and exits process if needed.
+ * @param {Error} error - The error object.
+ */
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    // Log unexpected errors
+    console.error('Unexpected server error:', error);
+    debug('Unexpected server error:', error);
+    throw error;
+  }
+
+  const bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // Handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      debug(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      debug(bind + ' is already in use');
+      process.exit(1);
+      break;
+    case 'EADDRNOTAVAIL':
+      console.error(bind + ' address is not available on this machine');
+      debug(bind + ' address is not available on this machine');
+      process.exit(1);
+      break;
+    case 'EMFILE':
+      console.error('Too many open files - system file descriptor limit reached');
+      debug('Too many open files - system file descriptor limit reached');
+      process.exit(1);
+      break;
+    default:
+      console.error(`Unhandled error: ${error.code} - ${error.message}`);
+      debug(`Unhandled error: ${error.code} - ${error.message}`);
+      throw error;
+  }
+}
+
+/**
+ * Log when the server starts listening.
+ * Displays the listening address and port.
+ */
+function onListening() {
+  const addr = server.address();
+  const bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  const url = `http://localhost:${addr.port}`;
+  debug('Listening on ' + bind);
+  debug(`Server is running at ${url}`);
+}
+
+/**
+ * Gracefully shut down the server on termination signals.
+ * Attempts to close all connections, then forces exit after timeout.
+ */
+function onShutdown() {
+  debug('Received shutdown signal, shutting down ...');
+  server.close(() => {
+    debug('Closed out remaining connections');
+    process.exit(0);
+  });
+
+  // Force shutdown if not closed in 10 seconds
+  setTimeout(() => {
+    debug('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+}
+
+/**
+ * Final cleanup after server has closed all connections.
+ * Use for server-specific resource cleanup.
+ */
+function onClose() {
+  debug('Server closed - all connections ended');
+
+  // Clean up server-specific resources (if any)
+  debug('Cleaning up server resources...');
+
+  // Example: Clear any server-level intervals or timeouts
+  // if (healthCheckInterval) clearInterval(healthCheckInterval);
+  // if (serverStatsTimeout) clearTimeout(serverStatsTimeout);
+
+  debug('Server shutdown complete');
+}

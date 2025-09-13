@@ -1,0 +1,38 @@
+{
+  "name": "learning-autocannon",
+  "version": "0.0.1",
+  "main": "app.js",
+  "exports": {
+    "import": "./src/app.js",
+    "require": "./src/app.js"
+  },
+  "type": "module",
+  "files": [
+    "/bin/www",
+    "./src"
+  ],
+  "scripts": {
+    "start": "node ./bin/www",
+    "start:debug": "node --trace-deopt --inspect=127.0.0.1:9229 ./bin/www",
+    "start:dev": "cross-env  NODE_ENV=development  PORT=3001 DEBUG=learning-autocannon:* nodemon ./bin/www",
+    "lint": "eslint ./src",
+    "bench": "node ./bench/autocannon.js"
+  },
+  "dependencies": {
+    "debug": "^4.4.1",
+    "dotenv": "^17.2.2",
+    "dotenv-expand": "^12.0.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0"
+  },
+  "devDependencies": {
+    "autocannon": "^8.0.0",
+    "c8": "^10.1.3",
+    "chai": "^6.0.1",
+    "cross-env": "^10.0.0",
+    "eslint": "^9.35.0",
+    "mocha": "^11.7.2",
+    "nodemon": "^3.1.10"
+  }
+}
