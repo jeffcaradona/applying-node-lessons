@@ -4,6 +4,13 @@
 // Module Imports
 // =======================
 
+
+/**
+ * Metrics module to collect and expose application metrics.
+ * Provides a function to stop metrics collection on shutdown.
+ */
+import { stopMetrics } from "../src/modules/metrics.mjs";
+
 /**
  * Load environment variables from .env file.
  */
@@ -191,6 +198,8 @@ function onListening() {
  */
 function onShutdown() {
   debug('Received shutdown signal, shutting down ...');
+  if (stopMetrics) stopMetrics();
+
   server.close(() => {
     debug('Closed out remaining connections');
     process.exit(0);

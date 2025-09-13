@@ -30,10 +30,10 @@ app.use(limiter);
 app.use((req, res, next) => {
   const allowedMethods = ["GET", "POST", "PUT", "DELETE"];
   if (!allowedMethods.includes(req.method)) {
-    next(createError(405, "Method Not Allowed"));
-  } else {
-    next();
+    return next(createError(405, "Method Not Allowed"));
   }
+  
+  return next();
 });
 
 

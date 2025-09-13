@@ -2,6 +2,10 @@ import express from "express";
 import createError from "http-errors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import {
+  eventLoopHeaders,
+  metricsHandler,
+} from "./modules/metrics.mjs";
 
 
 const app = express();
@@ -11,6 +15,12 @@ app.use(helmet());
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// Add event loop metrics headers to every response
+app.use(eventLoopHeaders());
+
+// Add Prometheus metrics endpoint
+app.get("/metrics", metricsHandler);
 
 // Rate limiting
 const limiter = rateLimit({
